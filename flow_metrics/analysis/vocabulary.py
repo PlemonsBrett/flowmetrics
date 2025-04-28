@@ -18,6 +18,7 @@ def download_nltk_data() -> None:
         nltk.data.find("tokenizers/punkt")  # type: ignore
     except LookupError:
         nltk.download("punkt")  # type: ignore
+        nltk.download("punkt_tab")  # type: ignore
 
     try:
         nltk.data.find("corpora/stopwords")  # type: ignore

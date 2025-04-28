@@ -6,7 +6,6 @@ import time
 
 import requests
 from bs4 import BeautifulSoup
-from bs4.element import Tag
 
 from flow_metrics.models.lyrics import LyricsScraperError, ScrapedLyrics
 
@@ -80,20 +79,12 @@ class LyricsScraper:
             raise LyricsScraperError(f"Request failed: {str(e)}") from e
 
     def search_azlyrics(self, artist: str, title: str) -> str | None:
-        """Search for lyrics on AZLyrics.
-
-        Args:
-            artist: Artist name
-            title: Song title
-
-        Returns:
-            Lyrics URL if found, None otherwise
-        """
         # Format artist and title for search
         artist_search = re.sub(r"[^a-zA-Z0-9]", "+", artist.lower())
         title_search = re.sub(r"[^a-zA-Z0-9]", "+", title.lower())
 
         search_url = f"https://search.azlyrics.com/search.php?q={artist_search}+{title_search}"
+        print(f"Searching AZLyrics at: {search_url}")
 
         try:
             html = self._make_request(search_url)
@@ -101,6 +92,7 @@ class LyricsScraper:
 
             # AZLyrics search results are in panels
             panels = soup.select(".panel")
+            print(f"Found {len(panels)} panels")
 
             # Look for song results panel
             for panel in panels:
@@ -116,27 +108,23 @@ class LyricsScraper:
             print(f"AZLyrics search error: {e}")
             return None
 
+    def get_direct_azlyrics_url(self, artist: str, title: str) -> str:
+        # Format artist and title for URL
+        artist_url = re.sub(r"[^a-zA-Z0-9]", "", artist.lower())
+        title_url = re.sub(r"[^a-zA-Z0-9]", "", title.lower())
+
+        # Construct direct URL
+        url = f"https://www.azlyrics.com/lyrics/{artist_url}/{title_url}.html"
+        print(f"Trying direct URL: {url}")
+
+        return url
+
     def get_lyrics_from_azlyrics(self, url: str) -> ScrapedLyrics:
-        """Scrape lyrics from AZLyrics.
-
-        Args:
-            url: AZLyrics URL
-
-        Returns:
-            Scraped lyrics
-
-        Raises:
-            LyricsScraperError: If scraping fails
-        """
         try:
             html = self._make_request(url)
             soup = BeautifulSoup(html, "html.parser")
 
             # Get artist and title
-            title_div = soup.select_one(".ringtone")
-            if not title_div:
-                raise LyricsScraperError("Could not find title information")
-
             artist_element = soup.select_one(".lyricsh h2")
             if not artist_element:
                 raise LyricsScraperError("Could not find artist information")
@@ -144,23 +132,34 @@ class LyricsScraper:
             artist_name = artist_element.text.strip()
             artist_name = re.sub(r"^lyrics by:", "", artist_name, flags=re.IGNORECASE).strip()
 
-            previous_b = title_div.find_previous("b")
-            if not previous_b:
+            # The title is in a <b> element
+            title_element = soup.select_one("b")
+            if not title_element:
                 raise LyricsScraperError("Could not find song title")
-            song_title = previous_b.text.strip()
+            song_title = title_element.text.strip()
             song_title = re.sub(r'^"(.*)"$', r"\1", song_title)  # Remove quotes
 
-            # Find the lyrics div (it has no class, comes after ringtone div)
-            lyrics_div = title_div.find_next_sibling("div")
+            # Find the lyrics div - it's usually the div that comes after the ringtone div
+            ringtone_div = soup.select_one(".ringtone")
+            if not ringtone_div:
+                raise LyricsScraperError("Could not find ringtone container")
+
+            # The lyrics div is another div that follows after some elements
+            # This is a more reliable way to find it
+            lyrics_divs = soup.find_all("div", class_=False, id=False)
+            lyrics_div = None
+
+            for div in lyrics_divs:
+                if div.find_previous(class_="ringtone") and len(div.text.strip()) > 100:
+                    lyrics_div = div
+                    break
 
             if not lyrics_div:
                 raise LyricsScraperError("Could not find lyrics container")
 
             # Get the text and remove any script tags
-            if isinstance(lyrics_div, Tag):
-                for script in lyrics_div.find_all("script"):
-                    if hasattr(script, "decompose"):
-                        script.decompose()
+            for script in lyrics_div.find_all("script"):
+                script.decompose()
 
             lyrics = lyrics_div.get_text().strip()
 
@@ -343,6 +342,13 @@ class LyricsScraper:
         Raises:
             LyricsScraperError: If all sources fail
         """
+        # Try to get a direct URL first
+        url = self.get_direct_azlyrics_url(artist, title)
+        try:
+            return self.get_lyrics_from_azlyrics(url)
+        except Exception as e:
+            print(f"Direct AZLyrics URL failed: {e}")
+
         # List of source search methods and their corresponding get methods
         sources = [
             (self.search_azlyrics, self.get_lyrics_from_azlyrics),
@@ -356,10 +362,13 @@ class LyricsScraper:
         for search_method, get_method in sources:
             try:
                 url = search_method(artist, title)
+                print(f"{search_method.__name__} URL: {url}")
                 if url:
                     return get_method(url)
             except Exception as e:
-                errors.append(str(e))
+                error_msg = f"{search_method.__name__} failed: {str(e)}"
+                print(error_msg)
+                errors.append(error_msg)
 
         # If all sources fail
         raise LyricsScraperError(

@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     # Musixmatch API credentials
     musixmatch_api_key: str = Field(..., description="Musixmatch API key")
 
+    # MongoDB Settings
+    mongo_uri: str = Field(..., description="MongoDB connection URI")
+    mongo_db: str = Field(..., description="MongoDB database name")
+    mongo_collection: str = Field(..., description="MongoDB collection name")
+
     # Application settings
     log_level: str = Field("INFO", description="Logging level")
     cache_dir: str = Field(".cache", description="Directory for caching API responses")

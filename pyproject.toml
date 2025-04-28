@@ -26,6 +26,7 @@ rich = "^14.0.0"
 pydantic-settings = "^2.9.1"
 beautifulsoup4 = "^4.13.4"
 lyricsgenius = "^3.6.2"
+pymongo = {extras = ["srv"], version = "^4.12.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -37,6 +38,10 @@ pyright = "^1.1.400"
 pytest-mock = "^3.14.0"
 vcrpy = "^7.0.0"
 responses = "^0.25.7"
+
+[tool.poetry.scripts]
+collect-artists = "flow_metrics.scripts.collect_artists:main"
+view-artists = "flow_metrics.scripts.view_artists:main"
 
 [tool.ruff]
 # Enable pycodestyle (E), Pyflakes (F), isort (I)
@@ -61,7 +66,7 @@ select = [
     "ARG",
     "ERA",
 ]
-ignore = ["ANN101", "ANN102"] # Ignore self and cls annotation requirements
+ignore = ["ANN401"] # Ignore self and cls annotation requirements
 line-length = 100
 target-version = "py312"
 
