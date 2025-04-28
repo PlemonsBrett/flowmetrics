@@ -28,11 +28,15 @@ jobs:
         run: |
           poetry install
           
-      - name: Run Ruff
+      - name: Run Ruff Linting
         run: |
           poetry run ruff check .
           
-      - name: Run Pyright
+      - name: Run Ruff Formatting
+        run: |
+          poetry run ruff format --check .
+          
+      - name: Run Pyright Type Checking
         run: |
           poetry run pyright
           

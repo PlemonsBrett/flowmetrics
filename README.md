@@ -124,16 +124,32 @@ flow-metrics/
 poetry run pytest
 ```
 
-### Linting
+### Linting and Formatting
+
+The project uses Ruff for both linting and formatting:
 
 ```bash
+# Check code
 poetry run ruff check .
+
+# Format code
+poetry run ruff format .
 ```
 
 ### Type Checking
 
+The project uses Pyright for static type checking:
+
 ```bash
 poetry run pyright
+```
+
+### Pre-commit Hooks
+
+Install pre-commit hooks to automatically run linting and type checking before commits:
+
+```bash
+poetry run pre-commit install
 ```
 
 ## Future Work
