@@ -531,6 +531,7 @@ class MusicBrainzClient:
 
         try:
             data = self._make_request("/release-group", params)
+            print(f"Raw API response keys: {data.keys()}")
             return MusicBrainzReleaseGroupList.model_validate(data)
         except Exception as e:
             raise MusicBrainzError(f"Failed to browse artist release groups: {str(e)}") from e

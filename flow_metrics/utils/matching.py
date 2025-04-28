@@ -11,7 +11,14 @@ from flow_metrics.models.musicbrainz import (
     MusicBrainzRelease,
     MusicBrainzReleaseGroup,
 )
-from flow_metrics.models.spotify import SpotifyAlbum, SpotifyArtist, SpotifyTrack
+from flow_metrics.models.spotify import (
+    SpotifyAlbum,
+    SpotifyAlbumSimplified,
+    SpotifyArtist,
+    SpotifyTrack,
+)
+
+AlbumMatch = dict[str, Any]
 
 
 def normalize_name(name: str) -> str:
@@ -135,7 +142,7 @@ def find_musicbrainz_release(
 
 
 def find_musicbrainz_release_group(
-    spotify_album: SpotifyAlbum,
+    spotify_album: SpotifyAlbumSimplified,
     mb_client: MusicBrainzClient,
     artist_id: str | None = None,
     similarity_threshold: float = 0.85,
@@ -261,7 +268,6 @@ def compare_artist_data(
 
     # Get artist details from both platforms
     spotify_stats = spotify_client.get_artist_stats(spotify_artist.id)
-    album_counts_dict = spotify_stats.album_counts if hasattr(spotify_stats, "album_counts") else spotify_stats.get("album_counts", {})
     mb_stats = mb_client.get_artist_info(mb_artist.id)
 
     # Get album counts
@@ -272,7 +278,7 @@ def compare_artist_data(
         "total": 0,
     }
 
-    for album_type, count in album_counts_dict.items():
+    for album_type, count in spotify_stats.album_counts.items():
         if album_type in spotify_album_counts:
             spotify_album_counts[album_type] = count
 
@@ -284,14 +290,8 @@ def compare_artist_data(
         album_types=["album"],
     )
 
-    mb_release_groups = [
-        rg
-        for rg in mb_stats["all_release_groups"]
-        if rg.primary_type and rg.primary_type.lower() == "album"
-    ]
-
     # Match albums between platforms
-    album_matches = []
+    album_matches: list[AlbumMatch] = []
 
     for spotify_album in spotify_albums[:10]:  # Limit to top 10 for performance
         mb_match = find_musicbrainz_release_group(spotify_album, mb_client, mb_artist.id)

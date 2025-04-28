@@ -161,12 +161,16 @@ class MusicBrainzReleaseGroup(BaseModel):
 class MusicBrainzReleaseGroupList(BaseModel):
     """List of MusicBrainz release groups."""
 
-    count: int
-    offset: int
-    release_groups: list[MusicBrainzReleaseGroup] = Field(alias="release-group-list")
+    count: int = Field(default=0, alias="release-group-count")
+    offset: int = Field(default=0)
+    release_groups: list[MusicBrainzReleaseGroup] = Field(
+        alias="release-groups",
+        default_factory=list,
+    )
 
     class Config:
         populate_by_name = True
+        from_attributes = True
 
 
 class MusicBrainzTrack(BaseModel):
