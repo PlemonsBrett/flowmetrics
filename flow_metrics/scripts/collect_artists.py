@@ -201,28 +201,64 @@ def get_artist_full_data(
 
     # Get Spotify artist stats
     try:
-        stats = spotify_client.get_artist_stats(artist_id=artist.id)
-
-        # Add album counts
-        artist_data["album_counts"] = stats.album_counts
-
-        # Get top tracks
-        artist_data["top_tracks"] = [
+        # Get separate album lists by type
+        albums = spotify_client.get_all_artist_albums(
+            artist_id=artist.id,
+            album_types=["album"],
+        )
+        
+        singles = spotify_client.get_all_artist_albums(
+            artist_id=artist.id,
+            album_types=["single"],
+        )
+        
+        compilations = spotify_client.get_all_artist_albums(
+            artist_id=artist.id,
+            album_types=["compilation"],
+        )
+        
+        # Only get a limited number of appearances to keep the data manageable
+        appearances = spotify_client.get_all_artist_albums(
+            artist_id=artist.id,
+            album_types=["appears_on"],
+        )
+        # Limit appearances to 100 to keep document size reasonable
+        appearances = appearances[:100] if len(appearances) > 100 else appearances
+        
+        # Count only albums where the artist is the primary artist (first artist)
+        primary_albums = [
+            album for album in albums 
+            if album.artists and album.artists[0].id == artist.id
+        ]
+        
+        # Count only singles where the artist is the primary artist
+        primary_singles = [
+            single for single in singles 
+            if single.artists and single.artists[0].id == artist.id
+        ]
+        
+        # Calculate accurate album counts
+        artist_data["album_counts"] = {
+            "album": len(primary_albums),
+            "single": len(primary_singles),
+            "compilation": len(compilations),
+            "appears_on": len(appearances),
+            "total": len(primary_albums) + len(primary_singles) + len(compilations),
+        }
+        
+        # Process album lists into simplified format for storage
+        artist_data["albums"] = [
             {
-                "id": track.id,
-                "name": track.name,
-                "popularity": track.popularity,
-                "explicit": track.explicit,
-                "duration_ms": track.duration_ms,
-                "album": {
-                    "id": track.album.id if track.album else None,
-                    "name": track.album.name if track.album else None,
-                    "release_date": track.album.release_date if track.album else None,
-                }
-                if track.album
-                else None,
+                "id": album.id,
+                "name": album.name,
+                "release_date": album.release_date,
+                "total_tracks": album.total_tracks,
+                "album_type": album.album_type,
+                "primary_artist": album.artists[0].name if album.artists else None,
+                "is_primary_artist": album.artists[0].id == artist.id if album.artists else False,
+                "image": album.images[0].url if album.images and len(album.images) > 0 else None,
             }
-            for track in stats.top_tracks
+            for album in albums
         ]
     except SpotifyError as e:
         console.print(
@@ -421,7 +457,7 @@ def main() -> None:
         # If we didn't find any new artists, stop here
         if not new_artists:
             console.print(
-                "[bold yellow]No new artists found to add to the database. Exiting.[/bold yellow]"
+                "[bold yellow]No new artists found to add to the database. Exiting.[/bold yellow]",
             )
             return
 
@@ -459,7 +495,7 @@ def main() -> None:
         # Print summary
         total_count = mongo_client.count_artists()
         console.print(
-            f"[bold green]Successfully processed {len(new_artists)} new artists![/bold green]"
+            f"[bold green]Successfully processed {len(new_artists)} new artists![/bold green]",
         )
         console.print(f"Total artists in database: {total_count}")
 
