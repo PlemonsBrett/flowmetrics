@@ -1,94 +1,149 @@
-# Flow Metrics
+# FlowMetrics
 
-# Why are some Hip-Hop artists more successful than others?
+FlowMetrics is a Python application for analyzing hip-hop artist vocabulary and career metrics using data from multiple music APIs.
 
-## Some data sources we are looking into:
+## Project Overview
 
-### 1. Artist Information and Popularity Metrics:
+This project aims to create a comprehensive analysis of hip-hop artists' vocabulary richness and career metrics by:
 
-- Spotify API
+1. Collecting data from multiple APIs (Spotify, MusicBrainz, Genius)
+2. Analyzing lyrics for vocabulary metrics
+3. Correlating vocabulary richness with career success metrics
 
-### 2. Discography & Song Data:
+## Features
 
-- MusicBrainz API
-- Spotify API
+- Comprehensive Spotify API client with Pydantic models
+- Lyrics analysis tools for vocabulary metrics computation
+- Artist discography and timeline visualization
+- Correlation analysis between vocabulary metrics and career success
 
-### 3. Lyrics for Vocabulary Analysis:
+## Installation
 
-- Genius API
+### Prerequisites
 
-## Some Information we want to display:
+- Python 3.12+
+- Poetry (dependency management)
 
-### 1. Artist Profile:
+### Setup
 
-- Basic Info
-  - Name
-  - Image
-  - Years Active
-- Career Metrics
-  - Total Albums
-  - Total EPs
-  - Total Singles
-  - Total Features
-- Popularity Trends over Time
+1. Clone the repository:
 
-### 2. Vocabulary Analysis Metrics:
+```bash
+git clone https://github.com/yourusername/flow-metrics.git
+cd flow-metrics
+```
 
-- Unique Word Count [UWC]
-- Type-Token Ratio [TTR] (ratio of unique words to total words)
-- Average Word Length [AVL]
-- Lexical Density [LD] (ratio of content words to total words)
-- Comparison to average hip-hope vocabulary baseline [VBL]
+2. Install dependencies with Poetry:
 
-### 3. Correlation Analysis:
+```bash
+poetry install
+```
 
-- Scatter plots showing relationship between vocabulary metrics and career metrics
-- Word complexity vs. Commercial Success
-- Vocabulary change over artists' career
+3. Create a `.env` file in the project root with your API credentials:
 
-## Technical Implementation Considerations
+```bash
+# Spotify API credentials
+SPOTIFY_CLIENT_ID=your_spotify_client_id
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
-### 1. Data Collection Pipeline
+# Genius API credentials (optional for lyrics)
+GENIUS_ACCESS_TOKEN=your_genius_access_token
+```
 
-1. Extract data from multiple APIs (Spotify, Chartmetric, MusicBrainz, Genius)
-2. Process lyrics for vocabulary analysis
-3. Store data in a Database (NoSQL Document Database)
+## Usage
 
-### 2. Natural Language Processing (NLP) for Lyrics:
+### Command Line Interface
 
-1. Clean lyrics by removing section headers, punctuation, etc.
-2. Tokenize text into words
-3. Filter out common words/stopwords for more meaningful analysis
-4. Use stemmming/lemmatization to count word roots instead of variations
+The project includes a command-line tool for artist analysis:
 
-### 3. Key Metrics to Track
+```bash
+# Activate the Poetry environment
+poetry shell
 
-1. **Token-Type Ratio [TTR]:** The ratio of unique words to total words. Higher values indicate more diverse vocabulary.
-2. **Unique Word Count [UWC]:** Total number of unique words in lyrics.
-3. **Advance Metrics:**
-  - Frequency of rare words (appearing in < 1% of hip-hop lyrics)
-  - Average syllables per word (Complexity Measure)
-  - Use of slang/vernacular vs. Standard English
+# Search for an artist and display their basic info
+python examples/artist_analysis.py "Kendrick Lamar"
 
-## Challenges to Address
+# Show top tracks
+python examples/artist_analysis.py "Kendrick Lamar" --top-tracks
 
-### 1. Data Completeness
+# Show release timeline
+python examples/artist_analysis.py "Kendrick Lamar" --timeline
 
-Not all lyrics may be available through APIs and might require web scraping to acquire. In the event that web scraping is used for lyrics collection, we will attempt to pull from multiple sources and compile an average.
+# Filter by album type
+python examples/artist_analysis.py "Kendrick Lamar" --timeline --album-type album single
+```
 
-### 2. Legal Considerations
+### Python API
 
-We will need to be careful how we store and display lyrics to avoid copyright infringment.
+You can also use the library in your own Python code:
 
-> Ideally, we shouldn't have any reason to display lyrics, but we should look into any implications of storing lyrics.
+```python
+from flow_metrics.clients.factory import create_spotify_client
+from flow_metrics.analysis.vocabulary import LyricsAnalyzer
 
-### 3. Attribution of Features
+# Create a Spotify client
+spotify = create_spotify_client()
 
-For songs with multiple artists, deciding whose vocabulary to attribute the lyrics to.
+# Search for an artist
+artists = spotify.search_artists("Kendrick Lamar")
+artist = artists[0]
 
-### 4. Genre Classification
+# Get artist stats
+stats = spotify.get_artist_stats(artist.id)
 
-Determining which artists are truly hip-hop/rap vs. adjacent genres. Unfortunately due to a lack of a formal evaluation method for this, we will be using the following priority:
-1. More than 1 source lists artist/song as `hip-hop`, `rap`, or both.
-2. At least 1 source lists artist/song as `hip-hop`, `rap`, or both.
-3. Personal opinion from author. In this scenario, the artist or song will be noted as added by personal opinion for addition to genre, and grouping categories will include data with and without these artists.
+# Get all artist tracks
+tracks = spotify.get_artist_all_tracks(artist.id, album_types=["album"])
+
+# Analyze lyrics (requires integration with a lyrics API)
+lyrics_analyzer = LyricsAnalyzer()
+metrics = lyrics_analyzer.analyze_lyrics(lyrics_text)
+```
+
+## Project Structure
+
+```
+flow-metrics/
+├── flow_metrics/             # Main package
+│   ├── http/                 # HTTP client
+│   ├── clients/              # API clients (Spotify, MusicBrainz, Genius)
+│   ├── models/               # Pydantic models
+│   ├── analysis/             # Analysis tools
+│   ├── config/               # Configuration
+│   └── utils/                # Utilities
+├── examples/                 # Example scripts
+├── tests/                    # Unit tests
+├── pyproject.toml            # Poetry configuration
+└── README.md                 # This file
+```
+
+## Development
+
+### Running Tests
+
+```bash
+poetry run pytest
+```
+
+### Linting
+
+```bash
+poetry run ruff check .
+```
+
+### Type Checking
+
+```bash
+poetry run pyright
+```
+
+## Future Work
+
+- MusicBrainz API integration for additional metadata
+- Genius API integration for lyrics collection
+- Database storage for collected data
+- Web dashboard for visualization
+- Machine learning models for vocabulary analysis
+
+## License
+
+MIT
