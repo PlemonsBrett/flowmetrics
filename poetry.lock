@@ -13,6 +13,29 @@ files = [
 ]
 
 [[package]]
+name = "beautifulsoup4"
+version = "4.13.4"
+description = "Screen-scraping library"
+optional = false
+python-versions = ">=3.7.0"
+groups = ["main"]
+files = [
+    {file = "beautifulsoup4-4.13.4-py3-none-any.whl", hash = "sha256:9bbbb14bfde9d79f38b8cd5f8c7c85f4b8f2523190ebed90e950a8dea4cb1c4b"},
+    {file = "beautifulsoup4-4.13.4.tar.gz", hash = "sha256:dbb3c4e1ceae6aefebdaf2423247260cd062430a410e38c66f2baa50a8437195"},
+]
+
+[package.dependencies]
+soupsieve = ">1.2"
+typing-extensions = ">=4.0.0"
+
+[package.extras]
+cchardet = ["cchardet"]
+chardet = ["chardet"]
+charset-normalizer = ["charset-normalizer"]
+html5lib = ["html5lib"]
+lxml = ["lxml"]
+
+[[package]]
 name = "certifi"
 version = "2025.4.26"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -340,6 +363,26 @@ files = [
     {file = "joblib-1.4.2-py3-none-any.whl", hash = "sha256:06d478d5674cbc267e7496a410ee875abd68e4340feff4490bcb7afb88060ae6"},
     {file = "joblib-1.4.2.tar.gz", hash = "sha256:2382c5816b2636fbd20a09e0f4e9dad4736765fdfb7dca582943b9c1366b3f0e"},
 ]
+
+[[package]]
+name = "lyricsgenius"
+version = "3.6.2"
+description = "Download lyrics and metadata from Genius.com"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "lyricsgenius-3.6.2-py3-none-any.whl", hash = "sha256:7990fe4c6fffbe570bbd84deaf7987de6921dd9937813ddf79fc3e8b13a39165"},
+    {file = "lyricsgenius-3.6.2.tar.gz", hash = "sha256:e23491940d26af7ec7b718f7d13eaf86e4e0085006b3e071e35bc2f248cab148"},
+]
+
+[package.dependencies]
+beautifulsoup4 = ">=4.12.3"
+requests = ">=2.27.1"
+
+[package.extras]
+checks = ["doc8 (>=0.11.2)", "flake8 (>=4.0.1)", "flake8-bugbear (>=22.9.23)", "pygments (>=2.14.0)", "tox (>=3.28.0)"]
+docs = ["sphinx (>=4.3.2)", "sphinx-rtd-theme (>=1.3.0)"]
 
 [[package]]
 name = "markdown-it-py"
@@ -1429,6 +1472,18 @@ files = [
 ]
 
 [[package]]
+name = "soupsieve"
+version = "2.7"
+description = "A modern CSS selector implementation for Beautiful Soup."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "soupsieve-2.7-py3-none-any.whl", hash = "sha256:6e60cc5c1ffaf1cebcc12e8188320b72071e922c2e897f737cadce79ad5d30c4"},
+    {file = "soupsieve-2.7.tar.gz", hash = "sha256:ad282f9b6926286d2ead4750552c8a6142bc4c783fd66b0293547c8fe6ae126a"},
+]
+
+[[package]]
 name = "spotipy"
 version = "2.25.1"
 description = "A light weight Python library for the Spotify Web API"
@@ -1803,4 +1858,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "80212a9afe081b9d0992dfdd9b19059d63210360b9dd99a85e2ad7c032bd262d"
+content-hash = "67243e71a50143c0f85def7b741a43987eaa56cc6d49a8305e50b0da5799e019"

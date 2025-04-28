@@ -1,6 +1,7 @@
 """Client factory module."""
 
 from flow_metrics.clients.musicbrainz import MusicBrainzClient
+from flow_metrics.clients.musixmatch import MusixmatchClient
 from flow_metrics.clients.spotify import SpotifyClient
 from flow_metrics.config.settings import get_settings
 
@@ -31,3 +32,13 @@ def create_musicbrainz_client() -> MusicBrainzClient:
         contact_info=settings.musicbrainz_contact,
         rate_limit=1.0,  # Respect MusicBrainz rate limit of 1 request per second
     )
+
+
+def create_musixmatch_client() -> MusixmatchClient:
+    """Create a Musixmatch client using app settings.
+
+    Returns:
+        Initialized Musixmatch client
+    """
+    settings = get_settings()
+    return MusixmatchClient(api_key=settings.musixmatch_api_key)

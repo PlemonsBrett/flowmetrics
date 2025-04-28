@@ -27,8 +27,8 @@ class Settings(BaseSettings):
         description="Contact email for MusicBrainz API User-Agent",
     )
 
-    # Genius API settings
-    genius_access_token: str | None = Field(None, description="Genius API access token")
+    # Musixmatch API credentials
+    musixmatch_api_key: str = Field(..., description="Musixmatch API key")
 
     # Application settings
     log_level: str = Field("INFO", description="Logging level")
